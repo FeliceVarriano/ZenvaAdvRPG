@@ -13,6 +13,5 @@ class MonsterModel{
 
     loseHealth(){
         this.health -= 1;
-        console.log(this.health);
     }
 }
