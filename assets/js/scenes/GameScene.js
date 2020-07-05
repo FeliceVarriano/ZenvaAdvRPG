@@ -56,12 +56,12 @@ class GameScene extends Phaser.Scene{
     spawnMonster(monsterObject){
         let monster = this.monsters.getFirstDead();
         if (!monster) {
-            monster = new Chest(this, monsterObject.x * 2, monsterObject.y * 2, 
+            monster = new Monster(this, monsterObject.x * 2, monsterObject.y * 2, 
                 'monsters', monsterObject.frame, monsterObject.id, monsterObject.health, monsterObject.maxHealth);
-          // add chest to chests group
+          // add monster to monsterss group
           this.monsters.add(monster);
         } else {
-            monster.id = monsterObject.id;       // pass the chest id
+            monster.id = monsterObject.id;       
             monster.health = monsterObject.health;
             monster.maxHealth = monsterObject.maxHealth
             monster.setTexture('monsters', monsterObject.frame);
@@ -74,12 +74,14 @@ class GameScene extends Phaser.Scene{
         this.physics.add.collider(this.player, this.map.blockedLayer);
         this.physics.add.overlap(this.player, this.chests, this.collectChest, null, this);
         this.physics.add.collider(this.monsters, this.map.blockedLayer);
-        this.physics.add.overlap(this.player, this.monsters, this.enemyOverlap, null, this);
+        this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
     }
 
     enemyOverlap(player, enemy){
-        enemy.makeInactive();
-        this.events.emit('destroyEnemy', enemy.id);
+        if(this.player.playerAttacking && !this.player.swordHit){
+            this.player.swordHit = true;
+            this.events.emit('monsterAttacked', enemy.id);
+        }        
     }
 
     createInput(){
@@ -115,6 +117,14 @@ class GameScene extends Phaser.Scene{
         });
         this.events.on('monsterSpawned', (monster) => {
             this.spawnMonster(monster);
+        });
+        this.events.on('monsterRemoved', (monsterId) => {
+            this.monsters.getChildren().forEach((monster) =>{
+                if(monster.id === monsterId){
+                    monster.makeInactive();
+                    console.log('made it inactive');
+                }
+            });
         });
         this.gameManager = new GameManager(this, this.map.map.objects);
         this.gameManager.setup();

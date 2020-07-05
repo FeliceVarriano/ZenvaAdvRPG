@@ -55,11 +55,16 @@ class GameManager{
           }
         });
 
-        this.scene.events.on('destroyEnemy', (monsterId) => {
+        this.scene.events.on('monsterAttacked', (monsterId) => {
             // update the spawner
-            if (this.monsters[monsterId]) {
-              // removing the chest
-              this.spawners[this.monsters[monsterId].spawnerId].removeObject(monsterId);
+            if (this.monsters[monsterId]) {                
+              this.monsters[monsterId].loseHealth();
+
+              // check monsters health and if dead remove the object
+              if(this.monsters[monsterId].health <= 0){
+                  this.spawners[this.monsters[monsterId].spawnerId].removeObject(monsterId);
+                  this.scene.events.emit('monsterRemoved', monsterId);
+                }
             }
           });
     }
